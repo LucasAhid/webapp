@@ -1,14 +1,31 @@
 import React, { useState } from 'react';
 
-function FormularioAluno() {
+function FormularioAluno(cursoSelecionadoId) {
   const [aluno, setAluno] = useState({
     Codigo: '',
-    Name: '',
+    Nome: '', 
     CPF: '',
     Endereço: '',
     CEP: '',
-    Email: ''
+    Telefone: '',
+    Email: '',
+    curso: cursoSelecionadoId,
   });
+  
+  const aoDigitarTelefone = (e) => {
+    const { id, value } = e.target;
+
+    const numerosApenas = value.replace(/\D/g, '');
+
+    let telefoneFormatado = numerosApenas.replace(/^(\d{2})(\d{8,9})$/, '$1-$2');
+
+
+    setAluno((prevAluno) => ({
+      ...prevAluno,
+      [id]: telefoneFormatado,
+    }));
+  };
+
 
   const aoDigitar = (e) => {
     const { id, value } = e.target;
@@ -19,45 +36,46 @@ function FormularioAluno() {
   };
 
   const cadastrarAluno = () => {
-    
-    if (validarEmail(aluno.Email)) {
+    console.log('Enviando requisição de cadastro do aluno:', aluno);
   
-      console.log('Email válido. Cadastrar aluno:', aluno);
-    } else {
-      console.error('Email inválido. Não cadastrar aluno.');
-    }
-    
-    fetch('/cadastrarAluno', {
+    fetch('http://localhost:8080/api/alunos/cadastrarAluno', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(aluno),
     })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Cadastro realizado com sucesso:', data);
+    .then((response) => {
+      console.log('Resposta do servidor:', response);
+      
+      if (!response.ok) {
+        throw new Error(`Erro na resposta do servidor: ${response.status} ${response.statusText}`);
+      }
+      
+      return response.json();
+    })
+    .then((data) => {
+      console.log('Cadastro realizado com sucesso:', data);
+      handleLimpar();
       })
       .catch((error) => {
         console.error('Erro ao cadastrar aluno:', error);
       });
-      handleLimpar();
   };
+  
 
   const handleLimpar = () => {
     setAluno({
       Codigo: '',
-      Nome: '',
+      Nome: '', 
       CPF: '',
       Endereço: '',
       CEP: '',
+      Telefone: '',
       Email: ''
     });
   };
 
-  const handleCancelar = () => {
-    console.log('Cancelando e voltando para a lista de cursos');
-  };
 
   const validarEmail = (email) => {
     const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -74,7 +92,7 @@ function FormularioAluno() {
           className='form-control'
           placeholder='Nome'
           id='Nome'
-          value={aluno.Name}
+          value={aluno.Nome}
         />
         <input
           type='text'
@@ -153,7 +171,16 @@ function FormularioAluno() {
             e.preventDefault();
         }}
         />
-
+        <input
+          type='text'
+          onChange={aoDigitarTelefone}
+          className='form-control'
+          placeholder='Telefone'
+          id='Telefone'
+          value={aluno.Telefone}
+          pattern="[0-9]{2}-[0-9]{8,9}"
+          maxLength="12"
+        />
         <input
           type='text'
           onChange={aoDigitar}
@@ -166,7 +193,6 @@ function FormularioAluno() {
       <div>
         <input type='button' value='Cadastrar' onClick={cadastrarAluno} />
         <input type='button' value='Limpar' onClick={handleLimpar} />
-        <input type='button' value='Cancelar' onClick={handleCancelar} />
       </div>
     </form>
   );

@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 function FormularioCurso({ cursoEditando, salvarEdicao}) {  
-  const [curso, setCurso] = useState({
-    codigo: cursoEditando ? cursoEditando.codigo : '',
-    nome: cursoEditando ? cursoEditando.nome : '',
-    cargaHoraria: cursoEditando ? cursoEditando.cargaHoraria : '',
-  });
-
   const [mensagem, setMensagem] = useState('');
+  const [curso, setCurso] = useState({
+    codigo: '',
+    nome: '',
+    cargaHoraria: ''})
 
+
+  useEffect(() => {
+    if (cursoEditando) {
+      setCurso({
+        codigo: cursoEditando.codigo || '',
+        nome: cursoEditando.nome || '',
+        cargaHoraria: cursoEditando.cargaHoraria || ''
+      });
+    }
+  },[cursoEditando]);
+ 
   const aoDigitar = (e) => {
     const { id, value } = e.target;
     setCurso((prevCurso) => ({
